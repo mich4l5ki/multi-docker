@@ -1,0 +1,23 @@
+name: Deploy Multidocker
+in:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker build -t rallycoding/react-test -f ./client/Dockerfile.dev ./client
+      - run: dokcer run -e CI=true rallycoding/react-test npm test # CI=true is a common convention to indicate that the application is running in a continuous integration environment
+      
+      - run: docker build -t rallycoding/multi-client ./client
+      - run: docker build -t rallycoding/multi-nginx ./nginx
+      - run: docker build -t rallycoding/multi-server ./server
+      - run: docker build -t rallycoding/multi-worker ./worker
+
+      - run: docker push rallycoding/multi-client
+      - run: docker push rallycoding/multi-nginx
+      - run: docker push rallycoding/multi-server
+      - run: docker push rallycoding/multi-worker
